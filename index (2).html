@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee brew kiosks</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #f8f1e7; }
+        .coffee-card { transition: all 0.3s ease; }
+        .coffee-card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-portal" class="min-h-screen flex items-center justify-center p-6">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md border border-amber-100">
+            <div class="text-center mb-8">
+                <span class="text-5xl">☕</span>
+                <h1 class="text-3xl font-bold text-amber-900 mt-2">Coffee brew kiosks</h1>
+                <p class="text-gray-500 text-sm">Sign in to start your order</p>
+            </div>
+
+            <div id="login-view">
+                <input type="email" id="login-email" placeholder="Email Address" class="w-full p-4 mb-3 border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none">
+                <input type="password" id="login-pass" placeholder="Password" class="w-full p-4 mb-4 border rounded-xl focus:ring-2 focus:ring-amber-500 outline-none">
+                <button onclick="handleLogin()" class="w-full bg-amber-800 text-white py-4 rounded-xl font-bold hover:bg-amber-900 transition">Sign In</button>
+                <div class="flex justify-between mt-6 text-sm">
+                    <button onclick="showView('signup')" class="text-amber-700 font-semibold hover:underline">Create Account</button>
+                    <button onclick="showView('forgot')" class="text-gray-500 hover:underline">Forgot Password?</button>
+                </div>
+            </div>
+
+            <div id="signup-view" class="hidden">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">Create Account</h2>
+                <input type="text" id="reg-name" placeholder="Full Name" class="w-full p-4 mb-3 border rounded-xl outline-none">
+                <input type="email" id="reg-email" placeholder="Email Address" class="w-full p-4 mb-3 border rounded-xl outline-none">
+                <input type="password" id="reg-pass" placeholder="Create Password" class="w-full p-4 mb-4 border rounded-xl outline-none">
+                <button onclick="handleRegister()" class="w-full bg-green-700 text-white py-4 rounded-xl font-bold hover:bg-green-800 transition">Register</button>
+                <button onclick="showView('login')" class="w-full mt-4 text-sm text-gray-400">Back to Login</button>
+            </div>
+
+            <div id="forgot-view" class="hidden">
+                <h2 class="text-xl font-bold mb-2 text-gray-800">Reset Password</h2>
+                <p class="text-sm text-gray-500 mb-4">Enter your email to set a new password for your account.</p>
+                <input type="email" id="reset-email" placeholder="Registered Email" class="w-full p-4 mb-3 border rounded-xl outline-none">
+                <input type="password" id="new-pass" placeholder="New Password" class="w-full p-4 mb-4 border rounded-xl outline-none">
+                <button onclick="handleReset()" class="w-full bg-amber-600 text-white py-4 rounded-xl font-bold hover:bg-amber-700 transition">Update Password</button>
+                <button onclick="showView('login')" class="w-full mt-4 text-sm text-gray-400">Back to Login</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-kiosk" class="hidden min-h-screen">
+        <nav class="bg-amber-900 text-white p-6 shadow-md sticky top-0 z-50">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold">☕ Coffee brew kiosks</h1>
+                <div class="flex items-center gap-6">
+                    <span id="user-welcome" class="hidden sm:block text-amber-200"></span>
+                    <button onclick="handleLogout()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg border border-white/30 transition text-sm">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="container mx-auto px-6 py-12">
+            <div class="mb-10 text-center">
+                <h2 class="text-4xl font-extrabold text-amber-950 mb-2">Our Signature Brews</h2>
+                <div class="h-1.5 w-20 bg-amber-600 mx-auto rounded-full"></div>
+            </div>
+
+            <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+        </main>
+    </div>
+
+    <script>
+        // Menu Data
+        const coffeeMenu = [
+            { id: 1, name: "Espresso", price: 120.00, desc: "Bold, rich, and intense concentrated coffee." },
+            { id: 2, name: "Cafe Latte", price: 165.00, desc: "Creamy espresso with silky steamed milk." },
+            { id: 3, name: "Cappuccino", price: 155.00, desc: "Perfect balance of espresso, milk, and foam." },
+            { id: 4, name: "Caramel Macchiato", price: 185.00, desc: "Espresso with vanilla and buttery caramel drizzle." },
+            { id: 5, name: "Cold Brew", price: 145.00, desc: "Slow-steeped for 12 hours for a smooth finish." },
+            { id: 6, name: "Barako Blend", price: 95.00, desc: "Authentic, strong Filipino Liberica coffee." }
+        ];
+
+        // --- Auth Logic ---
+        function showView(viewName) {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('signup-view').classList.add('hidden');
+            document.getElementById('forgot-view').classList.add('hidden');
+            document.getElementById(`${viewName}-view`).classList.remove('hidden');
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+
+            if(!name || !email || !pass) return alert("Please fill in all fields.");
+            
+            let users = JSON.parse(localStorage.getItem('coffee_users')) || [];
+            if(users.some(u => u.email === email)) return alert("Email already registered!");
+
+            users.push({ name, email, pass });
+            localStorage.setItem('coffee_users', JSON.stringify(users));
+            alert("Registration successful! You can now login.");
+            showView('login');
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const users = JSON.parse(localStorage.getItem('coffee_users')) || [];
+
+            const user = users.find(u => u.email === email && u.pass === pass);
+            
+            if(user) {
+                document.getElementById('auth-portal').classList.add('hidden');
+                document.getElementById('main-kiosk').classList.remove('hidden');
+                document.getElementById('user-welcome').innerText = `Hello, ${user.name}!`;
+                renderMenu();
+            } else {
+                alert("Invalid email or password.");
+            }
+        }
+
+        function handleReset() {
+            const email = document.getElementById('reset-email').value;
+            const newPass = document.getElementById('new-pass').value;
+            let users = JSON.parse(localStorage.getItem('coffee_users')) || [];
+            
+            const userIndex = users.findIndex(u => u.email === email);
+            if(userIndex === -1) return alert("Email not found.");
+            if(!newPass) return alert("Please enter a new password.");
+
+            users[userIndex].pass = newPass;
+            localStorage.setItem('coffee_users', JSON.stringify(users));
+            alert("Password updated successfully!");
+            showView('login');
+        }
+
+        function handleLogout() {
+            document.getElementById('main-kiosk').classList.add('hidden');
+            document.getElementById('auth-portal').classList.remove('hidden');
+            // Clear inputs
+            document.getElementById('login-email').value = "";
+            document.getElementById('login-pass').value = "";
+        }
+
+        // --- Menu Logic ---
+        function renderMenu() {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = coffeeMenu.map(item => `
+                <div class="coffee-card bg-white rounded-3xl overflow-hidden border border-amber-100 p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="h-16 w-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-6 text-3xl">☕</div>
+                        <h3 class="text-2xl font-bold text-amber-900 mb-2">${item.name}</h3>
+                        <p class="text-gray-500 text-sm leading-relaxed mb-6">${item.desc}</p>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-gray-50 pt-4">
+                        <span class="text-2xl font-black text-amber-800">₱${item.price.toFixed(2)}</span>
+                        <button class="bg-amber-100 text-amber-800 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-amber-200 transition">View Details</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
